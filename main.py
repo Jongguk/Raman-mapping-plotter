@@ -10,7 +10,7 @@ def import_data():
     root.withdraw()
     file_path = tkinter.filedialog.askopenfilename(
         title = "Select a raw data file (.csv).",
-        filetypes = [("csv file", "*.csv"), ("All files", "*.*")]
+        filetypes = [("(*.csv) file", "*.csv"), ("All files", "*.*")]
     )
     if not file_path:
         sys.exit("Error: No file selected.")
@@ -19,17 +19,16 @@ def import_data():
     print("Selected file is: " + file_name)
 
     with open(file_path, 'r') as file:
-        raw_data = file.readlines()
+        raw_data = file.read()
+    rows = raw_data.strip().split("\n")
+    converted_data = [row.strip().split(",") for row in rows]
 
-    csv_data = [line.strip().split(",") for line in raw_data]
-    return csv_data
-# Initialize CONSTANTS
-# X_PIXEL_COUNT =
-# Y_PIXEL_COUNT =
-# CCD_COUNT = 
+    return converted_data
 
-result = import_data()
-print(result[0])
-spectrum_energy = result[0][3:-1]
-test_spectrum_intensity = result[1][3:-1]
+result = np.array(import_data())
+sliced_result = np.array(result[:,3:-1], dtype = float)
+spectrum_energy = sliced_result[0]
+spectrum_intensity = sliced_result[1]
 
+plt.plot(spectrum_energy, spectrum_intensity)
+plt.show()
