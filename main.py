@@ -12,10 +12,10 @@ plot_y = 9 # 스펙트럼 뽑을 y 좌표
 selected_area_begin = 540 # 맵핑할때 사용할 면적 범위 시작 (에너지)
 selected_area_end = 560 # 맵핑할때 사용할 면적 범위 끝
 
-output_folder = "output_data"  # Output folder for saving data
+output = "output"  # Output folder for saving data
 # Create the output folder if it doesn't exist
-if not os.path.exists(output_folder):
-    os.makedirs(output_folder)
+if not os.path.exists(output):
+    os.makedirs(output)
 
 def import_data():
     root = tkinter.Tk()
@@ -65,12 +65,12 @@ spectrum_intensity = result[line_number]
 
 # Accumulate the counts in the file name
 count = 0  # Added to keep track of the count
-output_file_dir = "output_folder"  # Added to specify the output folder
+output_file_dir = "output"  # Added to specify the output folder
 os.makedirs(output_file_dir, exist_ok=True)  # Added to create the output folder if it doesn't exist
-output_file_path = os.path.join(output_folder, f"data_plot_{plot_x}_{plot_y}_{count}.txt")  # Modified to include plot_x and plot_y
+output_file_path = os.path.join(output, f"data_plot_{plot_x}_{plot_y}_{count}.txt")  # Modified to include plot_x and plot_y
 while os.path.exists(output_file_path):  # Added to check for existing files and increment count if necessary
     count += 1  # Increment count
-    output_file_path = os.path.join(output_folder, f"data_plot_{plot_x}_{plot_y}_{count}.txt")  # Modified to include plot_x and plot_y
+    output_file_path = os.path.join(output, f"data_plot_{plot_x}_{plot_y}_{count}.txt")  # Modified to include plot_x and plot_y
 
 # Save data to the output file
 with open(output_file_path, 'w') as file:  # Modified to use the calculated output file path
