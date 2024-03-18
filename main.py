@@ -3,6 +3,7 @@ import tkinter
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 from tkinter import filedialog
 
@@ -10,6 +11,11 @@ plot_x = 8 # 스펙트럼 뽑을 x 좌표
 plot_y = 9 # 스펙트럼 뽑을 y 좌표
 selected_area_begin = 540 # 맵핑할때 사용할 면적 범위 시작 (에너지)
 selected_area_end = 560 # 맵핑할때 사용할 면적 범위 끝
+
+output = "output"  # Output folder for saving data
+# Create the output folder if it doesn't exist
+if not os.path.exists(output):
+    os.makedirs(output)
 
 def import_data():
     root = tkinter.Tk()
@@ -27,10 +33,9 @@ def import_data():
     with open(file_path, 'r') as file:
         raw_data = file.read()
     rows = raw_data.strip().split("\n")
-    seperated_data = [row.strip().split(",") for row in rows]
+    separated_data = [row.strip().split(",") for row in rows]
     PIXEL_COUNT: int = int(math.sqrt(len(rows) - 1))
-    sliced_result = np.array(np.array(seperated_data)[:,3:-1], dtype = float)
-    
+    sliced_result = np.array(np.array(separated_data)[:, 3:-1], dtype=float)
     return sliced_result, PIXEL_COUNT
 
 def select_area(selected_area_begin = None, selected_area_end = None):
@@ -55,15 +60,39 @@ for y in range(PIXEL_COUNT):
 
 print(integrated_area)
 
-line_number = plot_x * PIXEL_COUNT + plot_y
+line_number = int(plot_x * PIXEL_COUNT + plot_y)
 spectrum_intensity = result[line_number]
 
-output_file_path = "data_plot.txt"
-with open(output_file_path, 'w') as file:
+# Accumulate the counts in the file name
+count = 0  # Added to keep track of the count
+output_file_dir = "output"  # Added to specify the output folder
+os.makedirs(output_file_dir, exist_ok=True)  # Added to create the output folder if it doesn't exist
+output_file_path = os.path.join(output, f"data_plot_{plot_x}_{plot_y}_{count}.txt")  # Modified to include plot_x and plot_y
+while os.path.exists(output_file_path):  # Added to check for existing files and increment count if necessary
+    count += 1  # Increment count
+    output_file_path = os.path.join(output, f"data_plot_{plot_x}_{plot_y}_{count}.txt")  # Modified to include plot_x and plot_y
+
+# Save data to the output file
+with open(output_file_path, 'w') as file:  # Modified to use the calculated output file path
     file.write("X\tY\n")
     for x, y in zip(spectrum_energy, spectrum_intensity):
         file.write(f"{x}\t{y}\n")
 
-plt.imshow(integrated_area, interpolation='none')
+# Rotate integrated_area 90 degrees to the right (#240316)
+rotated_area = np.rot90(integrated_area, k=-1)
+
+# Define the extent for the intensity range
+extent = [selected_area_begin, selected_area_end, 0, PIXEL_COUNT]
+
+# Plot the rotated image with adjusted intensity range
+plt.imshow(rotated_area, interpolation='none', extent=extent, origin='lower')
+plt.colorbar(label='Intensity (a.u)')  # Add color bar indicating intensity
+plt.xlabel('')  # Label for the x-axis
+plt.ylabel('')  # Label for the y-axis
+plt.title(f'{selected_area_begin} ~ {selected_area_end} nm')  # Title for the plot
+
+# Plot the rotated image (#240316)
+plt.imshow(rotated_area, interpolation='none')
+# plt.imshow(integrated_area, interpolation='none')
 # plt.plot(spectrum_energy, spectrum_intensity)
 plt.show()
