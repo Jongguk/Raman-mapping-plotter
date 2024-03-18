@@ -7,10 +7,10 @@ import os
 
 from tkinter import filedialog
 
-plot_x = 8 # 스펙트럼 뽑을 x 좌표
-plot_y = 9 # 스펙트럼 뽑을 y 좌표
-selected_area_begin = 540 # 맵핑할때 사용할 면적 범위 시작 (에너지)
-selected_area_end = 560 # 맵핑할때 사용할 면적 범위 끝
+plot_x = 1 # 스펙트럼 뽑을 x 좌표
+plot_y = 1 # 스펙트럼 뽑을 y 좌표
+selected_area_begin = 600 # 맵핑할때 사용할 면적 범위 시작 (에너지)
+selected_area_end = 700 # 맵핑할때 사용할 면적 범위 끝
 
 output = "output"  # Output folder for saving data
 # Create the output folder if it doesn't exist
@@ -78,21 +78,45 @@ with open(output_file_path, 'w') as file:  # Modified to use the calculated outp
     for x, y in zip(spectrum_energy, spectrum_intensity):
         file.write(f"{x}\t{y}\n")
 
-# Rotate integrated_area 90 degrees to the right (#240316)
-rotated_area = np.rot90(integrated_area, k=-1)
-
 # Define the extent for the intensity range
 extent = [selected_area_begin, selected_area_end, 0, PIXEL_COUNT]
 
 # Plot the rotated image with adjusted intensity range
-plt.imshow(rotated_area, interpolation='none', extent=extent, origin='lower')
-plt.colorbar(label='Intensity (a.u)')  # Add color bar indicating intensity
-plt.xlabel('')  # Label for the x-axis
-plt.ylabel('')  # Label for the y-axis
-plt.title(f'{selected_area_begin} ~ {selected_area_end} nm')  # Title for the plot
+fig, axs = plt.subplots(1, 2, figsize=(10, 4.5), gridspec_kw={'width_ratios': [3, 2]})
 
-# Plot the rotated image (#240316)
-plt.imshow(rotated_area, interpolation='none')
-# plt.imshow(integrated_area, interpolation='none')
-# plt.plot(spectrum_energy, spectrum_intensity)
+im = axs[0].imshow(integrated_area, interpolation='none', aspect='equal')
+fig.colorbar(im, ax=axs[0], label='Intensity (a.u)')  # Add color bar indicating intensity
+axs[0].set_xlabel('')  # Label for the x-axis
+axs[0].set_ylabel('')  # Label for the y-axis
+axs[0].set_title(f'{selected_area_begin} ~ {selected_area_end} nm')  # Title for the plot
+
+axs[1].plot(spectrum_energy, spectrum_intensity)
+axs[1].set_title(f'({plot_x}, {plot_y}) spectrum')  # Title for the plot
+
+def onclick(event):
+    global plot_x, plot_y, spectrum_intensity
+    if event.inaxes == axs[0]:  # Event check for click in subplot[0]
+        x_index = int(event.xdata)
+        y_index = int(event.ydata)
+        print(f'Clicked at (x={x_index}, y={y_index})')  # Print coordinate from mouse click
+        plot_x = x_index  # Update coordinate
+        plot_y = y_index
+
+        # Update spectrum number
+        line_number = int(plot_x * PIXEL_COUNT + plot_y)
+        spectrum_intensity = result[line_number]
+
+        # Update subplot[1]
+        axs[1].clear()
+        axs[1].plot(spectrum_energy, spectrum_intensity)
+        axs[1].set_title(f'({plot_x}, {plot_y}) spectrum')  # Title for the plot
+        axs[1].set_xlabel('Energy')  # Label for the x-axis
+        axs[1].set_ylabel('Intensity')  # Label for the y-axis
+        axs[1].set_ylim(-200, 2500)
+
+        plt.draw()
+
+# Sync mouse click event
+fig.canvas.mpl_connect('button_press_event', onclick)
+
 plt.show()
