@@ -74,6 +74,21 @@ with open(output_file_path, 'w') as file:  # Modified to use the calculated outp
     for x, y in zip(spectrum_energy, spectrum_intensity):
         file.write(f"{x}\t{y}\n")
 
-plt.imshow(integrated_area, interpolation='none')
+# Rotate integrated_area 90 degrees to the right (#240316)
+rotated_area = np.rot90(integrated_area, k=-1)
+
+# Define the extent for the intensity range
+extent = [selected_area_begin, selected_area_end, 0, PIXEL_COUNT]
+
+# Plot the rotated image with adjusted intensity range
+plt.imshow(rotated_area, interpolation='none', extent=extent, origin='lower')
+plt.colorbar(label='Intensity (a.u)')  # Add color bar indicating intensity
+plt.xlabel('')  # Label for the x-axis
+plt.ylabel('')  # Label for the y-axis
+plt.title(f'{selected_area_begin} ~ {selected_area_end} nm')  # Title for the plot
+
+# Plot the rotated image (#240316)
+plt.imshow(rotated_area, interpolation='none')
+# plt.imshow(integrated_area, interpolation='none')
 # plt.plot(spectrum_energy, spectrum_intensity)
 plt.show()
