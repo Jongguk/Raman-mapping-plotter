@@ -12,6 +12,11 @@ plot_y = 9 # 스펙트럼 뽑을 y 좌표
 selected_area_begin = 540 # 맵핑할때 사용할 면적 범위 시작 (에너지)
 selected_area_end = 560 # 맵핑할때 사용할 면적 범위 끝
 
+output_folder = "output_data"  # Output folder for saving data
+# Create the output folder if it doesn't exist
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
+
 def import_data():
     root = tkinter.Tk()
     root.withdraw()
