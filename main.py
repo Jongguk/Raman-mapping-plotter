@@ -112,6 +112,7 @@ def onclick(event):
         axs[1].set_title(f'({plot_x}, {plot_y}) spectrum')  # Title for the plot
         axs[1].set_xlabel('Energy')  # Label for the x-axis
         axs[1].set_ylabel('Intensity')  # Label for the y-axis
+        axs[1].set_ylim(-200, 2500)
 
         plt.draw()
 
