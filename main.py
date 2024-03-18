@@ -8,12 +8,13 @@ import os
 from tkinter import filedialog
 from matplotlib.widgets import Button
 
-plot_x = 1 # 스펙트럼 뽑을 x 좌표
-plot_y = 1 # 스펙트럼 뽑을 y 좌표
-selected_area_begin = 600 # 맵핑할때 사용할 면적 범위 시작 (에너지)
-selected_area_end = 700 # 맵핑할때 사용할 면적 범위 끝
+plot_x = 1 # Default x coordinate for initial spectrum
+plot_y = 1
+selected_area_begin = 600 # Default lower energy limit in area summation for mapping plot
+selected_area_end = 700
 
 output = "output"  # Output folder for saving data
+
 # Create the output folder if it doesn't exist
 if not os.path.exists(output):
     os.makedirs(output)
@@ -55,7 +56,7 @@ def export_spectrum_data(x_data, y_data, file_path):
         for x, y in zip(x_data, y_data):
             file.write(f"{x},{y}\n")
 
-# Function to handle export button click for left subplot
+# Function to handle export button click for mapping plot
 def export_mapping(output_folder = output):
     file_path = tkinter.filedialog.asksaveasfilename(
         initialdir=output_folder,
@@ -66,7 +67,7 @@ def export_mapping(output_folder = output):
         export_2d_data(integrated_area, file_path)
         print(f"Integrated area data saved to: {file_path}")
 
-# Function to handle export button click for right subplot
+# Function to handle export button click for spectrum
 def export_spectrum(output_folder = output):
     file_path = tkinter.filedialog.asksaveasfilename(
         initialdir=output_folder,
@@ -80,24 +81,21 @@ def export_spectrum(output_folder = output):
 result, PIXEL_COUNT = import_data()
 print("A size of selected file is " + str(PIXEL_COUNT) + " x " + str(PIXEL_COUNT))
 
-# Test case for spectrum
+# Initial plot for spectrum
 spectrum_energy = result[0]
 selection_mask = select_area(selected_area_begin, selected_area_end)
+line_number = int(plot_x * PIXEL_COUNT + plot_y)
+spectrum_intensity = result[line_number]
 
+# Calculate total area from the selected energy range
 integrated_area = np.zeros((PIXEL_COUNT, PIXEL_COUNT))
-
 i = 0
 for y in range(PIXEL_COUNT):
     for x in range(PIXEL_COUNT):
         integrated_area[x, y] = (result[i + 1] * selection_mask).sum()
         i += 1
 
-print(integrated_area)
-
-line_number = int(plot_x * PIXEL_COUNT + plot_y)
-spectrum_intensity = result[line_number]
-
-# Accumulate the counts in the file name
+# Accumulate the count in the file name
 count = 0  # Added to keep track of the count
 output_file_dir = "output"  # Added to specify the output folder
 os.makedirs(output_file_dir, exist_ok=True)  # Added to create the output folder if it doesn't exist
