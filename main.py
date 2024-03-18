@@ -3,6 +3,7 @@ import tkinter
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 from tkinter import filedialog
 
@@ -55,11 +56,20 @@ for y in range(PIXEL_COUNT):
 
 print(integrated_area)
 
-line_number = plot_x * PIXEL_COUNT + plot_y
+line_number = int(plot_x * PIXEL_COUNT + plot_y)
 spectrum_intensity = result[line_number]
 
-output_file_path = "data_plot.txt"
-with open(output_file_path, 'w') as file:
+# Accumulate the counts in the file name
+count = 0  # Added to keep track of the count
+output_file_dir = "output_folder"  # Added to specify the output folder
+os.makedirs(output_file_dir, exist_ok=True)  # Added to create the output folder if it doesn't exist
+output_file_path = os.path.join(output_folder, f"data_plot_{plot_x}_{plot_y}_{count}.txt")  # Modified to include plot_x and plot_y
+while os.path.exists(output_file_path):  # Added to check for existing files and increment count if necessary
+    count += 1  # Increment count
+    output_file_path = os.path.join(output_folder, f"data_plot_{plot_x}_{plot_y}_{count}.txt")  # Modified to include plot_x and plot_y
+
+# Save data to the output file
+with open(output_file_path, 'w') as file:  # Modified to use the calculated output file path
     file.write("X\tY\n")
     for x, y in zip(spectrum_energy, spectrum_intensity):
         file.write(f"{x}\t{y}\n")
