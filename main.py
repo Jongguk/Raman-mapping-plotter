@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import os
 
 from tkinter import filedialog
+from matplotlib.widgets import Button
 
 plot_x = 1 # 스펙트럼 뽑을 x 좌표
 plot_y = 1 # 스펙트럼 뽑을 y 좌표
@@ -42,6 +43,39 @@ def select_area(selected_area_begin = None, selected_area_end = None):
     selection_mask = (spectrum_energy >= selected_area_begin) & (spectrum_energy <= selected_area_end)
     print(selection_mask, selection_mask.sum())
     return selection_mask
+
+# Function to save 2D array to CSV file
+def export_2d_data(data, file_path):
+    np.savetxt(file_path, data, delimiter=",")
+
+# Function to save spectrum data to CSV file
+def export_spectrum_data(x_data, y_data, file_path):
+    with open(file_path, 'w') as file:
+        file.write("Energy,Intensity\n")
+        for x, y in zip(x_data, y_data):
+            file.write(f"{x},{y}\n")
+
+# Function to handle export button click for left subplot
+def export_mapping(output_folder = output):
+    file_path = tkinter.filedialog.asksaveasfilename(
+        initialdir=output_folder,
+        title="Save Integrated Area Data",
+        filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
+    )
+    if file_path:
+        export_2d_data(integrated_area, file_path)
+        print(f"Integrated area data saved to: {file_path}")
+
+# Function to handle export button click for right subplot
+def export_spectrum(output_folder = output):
+    file_path = tkinter.filedialog.asksaveasfilename(
+        initialdir=output_folder,
+        title="Save Spectrum Data",
+        filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
+    )
+    if file_path:
+        export_spectrum_data(spectrum_energy, spectrum_intensity, file_path)
+        print(f"Spectrum data saved to: {file_path}")
 
 result, PIXEL_COUNT = import_data()
 print("A size of selected file is " + str(PIXEL_COUNT) + " x " + str(PIXEL_COUNT))
@@ -92,6 +126,12 @@ axs[0].set_title(f'{selected_area_begin} ~ {selected_area_end} nm')  # Title for
 
 axs[1].plot(spectrum_energy, spectrum_intensity)
 axs[1].set_title(f'({plot_x}, {plot_y}) spectrum')  # Title for the plot
+
+# Create export buttons
+button_export_mapping = Button(plt.axes([0.01, 0.2, 0.07, 0.1]), "Export\nmapping")
+button_export_mapping.on_clicked(export_mapping)
+button_export_spectrum = Button(plt.axes([0.01, 0.05, 0.07, 0.1]), "Export\nspectrum")
+button_export_spectrum.on_clicked(export_spectrum)
 
 def onclick(event):
     global plot_x, plot_y, spectrum_intensity
