@@ -7,10 +7,10 @@ import os
 
 from tkinter import filedialog
 
-plot_x = 8 # 스펙트럼 뽑을 x 좌표
-plot_y = 9 # 스펙트럼 뽑을 y 좌표
-selected_area_begin = 540 # 맵핑할때 사용할 면적 범위 시작 (에너지)
-selected_area_end = 560 # 맵핑할때 사용할 면적 범위 끝
+plot_x = 1 # 스펙트럼 뽑을 x 좌표
+plot_y = 1 # 스펙트럼 뽑을 y 좌표
+selected_area_begin = 600 # 맵핑할때 사용할 면적 범위 시작 (에너지)
+selected_area_end = 700 # 맵핑할때 사용할 면적 범위 끝
 
 output = "output"  # Output folder for saving data
 # Create the output folder if it doesn't exist
@@ -94,12 +94,13 @@ axs[1].plot(spectrum_energy, spectrum_intensity)
 axs[1].set_title(f'({plot_x}, {plot_y}) spectrum')  # Title for the plot
 
 def onclick(event):
-    global plot_x, spectrum_intensity
+    global plot_x, plot_y, spectrum_intensity
     if event.inaxes == axs[0]:  # Event check for click in subplot[0]
         x_index = int(event.xdata)
         y_index = int(event.ydata)
         print(f'Clicked at (x={x_index}, y={y_index})')  # Print coordinate from mouse click
         plot_x = x_index  # Update coordinate
+        plot_y = y_index
 
         # Update spectrum number
         line_number = int(plot_x * PIXEL_COUNT + plot_y)
