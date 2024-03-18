@@ -45,7 +45,6 @@ print("A size of selected file is " + str(PIXEL_COUNT) + " x " + str(PIXEL_COUNT
 spectrum_energy = result[0]
 selection_mask = select_area(selected_area_begin, selected_area_end)
 
-# print((result[1:] * selection_mask).sum())
 integrated_area = np.zeros((PIXEL_COUNT, PIXEL_COUNT))
 
 i = 0
@@ -53,7 +52,6 @@ for y in range(PIXEL_COUNT):
     for x in range(PIXEL_COUNT):
         integrated_area[x, y] = (result[i + 1] * selection_mask).sum()
         i += 1
-        # print(integrated_area)
 
 print(integrated_area)
 
