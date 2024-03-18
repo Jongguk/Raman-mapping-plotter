@@ -33,10 +33,9 @@ def import_data():
     with open(file_path, 'r') as file:
         raw_data = file.read()
     rows = raw_data.strip().split("\n")
-    seperated_data = [row.strip().split(",") for row in rows]
+    separated_data = [row.strip().split(",") for row in rows]
     PIXEL_COUNT: int = int(math.sqrt(len(rows) - 1))
-    sliced_result = np.array(np.array(seperated_data)[:,3:-1], dtype = float)
-    
+    sliced_result = np.array(np.array(separated_data)[:, 3:-1], dtype=float)
     return sliced_result, PIXEL_COUNT
 
 def select_area(selected_area_begin = None, selected_area_end = None):
