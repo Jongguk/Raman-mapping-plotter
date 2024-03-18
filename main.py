@@ -110,9 +110,6 @@ with open(output_file_path, 'w') as file:  # Modified to use the calculated outp
     for x, y in zip(spectrum_energy, spectrum_intensity):
         file.write(f"{x}\t{y}\n")
 
-# Define the extent for the intensity range
-extent = [selected_area_begin, selected_area_end, 0, PIXEL_COUNT]
-
 # Plot the rotated image with adjusted intensity range
 fig, axs = plt.subplots(1, 2, figsize=(10, 4.5), gridspec_kw={'width_ratios': [3, 2]})
 
