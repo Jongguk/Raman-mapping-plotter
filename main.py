@@ -8,12 +8,13 @@ import os
 from tkinter import filedialog
 from matplotlib.widgets import Button
 
-plot_x = 1 # 스펙트럼 뽑을 x 좌표
-plot_y = 1 # 스펙트럼 뽑을 y 좌표
-selected_area_begin = 600 # 맵핑할때 사용할 면적 범위 시작 (에너지)
-selected_area_end = 700 # 맵핑할때 사용할 면적 범위 끝
+plot_x = 1 # Default x coordinate for initial spectrum
+plot_y = 1
+selected_area_begin = 600 # Default lower energy limit in area summation for mapping plot
+selected_area_end = 700
 
 output = "output"  # Output folder for saving data
+
 # Create the output folder if it doesn't exist
 if not os.path.exists(output):
     os.makedirs(output)
@@ -55,7 +56,7 @@ def export_spectrum_data(x_data, y_data, file_path):
         for x, y in zip(x_data, y_data):
             file.write(f"{x},{y}\n")
 
-# Function to handle export button click for left subplot
+# Function to handle export button click for mapping plot
 def export_mapping(output_folder = output):
     file_path = tkinter.filedialog.asksaveasfilename(
         initialdir=output_folder,
@@ -63,10 +64,10 @@ def export_mapping(output_folder = output):
         filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]
     )
     if file_path:
-        export_2d_data(integrated_area, file_path)
+        export_2d_data(integrated_area_baseline_subtract, file_path)
         print(f"Integrated area data saved to: {file_path}")
 
-# Function to handle export button click for right subplot
+# Function to handle export button click for spectrum
 def export_spectrum(output_folder = output):
     file_path = tkinter.filedialog.asksaveasfilename(
         initialdir=output_folder,
@@ -80,24 +81,39 @@ def export_spectrum(output_folder = output):
 result, PIXEL_COUNT = import_data()
 print("A size of selected file is " + str(PIXEL_COUNT) + " x " + str(PIXEL_COUNT))
 
-# Test case for spectrum
+# Initial plot for spectrum
 spectrum_energy = result[0]
 selection_mask = select_area(selected_area_begin, selected_area_end)
+line_number = int(plot_x * PIXEL_COUNT + plot_y)
+spectrum_intensity = result[line_number]
 
+def find_index_baseline(arr = spectrum_energy, selected_area_begin : int = selected_area_begin, selected_area_end : int = selected_area_end):
+    baseline_left_index = None
+    baseline_right_index = None
+    for j, num in enumerate(spectrum_energy):
+        if num <= selected_area_begin:
+            if baseline_left_index is None or spectrum_energy[j] > spectrum_energy[baseline_left_index]:
+                baseline_left_index = j
+    for i, num in enumerate(spectrum_energy):
+        if num >= selected_area_end:
+            if baseline_right_index is None or spectrum_energy[i] < spectrum_energy[baseline_right_index]:
+                baseline_right_index = i
+    return baseline_left_index, baseline_right_index
+
+# Calculate total area from the selected energy range
+selected_point_count = selection_mask.sum()
 integrated_area = np.zeros((PIXEL_COUNT, PIXEL_COUNT))
-
+integrated_area_baseline_subtract = np.zeros((PIXEL_COUNT, PIXEL_COUNT))
 i = 0
 for y in range(PIXEL_COUNT):
     for x in range(PIXEL_COUNT):
         integrated_area[x, y] = (result[i + 1] * selection_mask).sum()
+        baseline_left = result[i + 1][find_index_baseline(result[i + 1])[0]]
+        baseline_right = result[i + 1][find_index_baseline(result[i + 1])[1]]
+        integrated_area_baseline_subtract[x, y] = integrated_area[x, y] - (selected_point_count * (baseline_left + baseline_right) * 0.5)
         i += 1
 
-print(integrated_area)
-
-line_number = int(plot_x * PIXEL_COUNT + plot_y)
-spectrum_intensity = result[line_number]
-
-# Accumulate the counts in the file name
+# Accumulate the count in the file name
 count = 0  # Added to keep track of the count
 output_file_dir = "output"  # Added to specify the output folder
 os.makedirs(output_file_dir, exist_ok=True)  # Added to create the output folder if it doesn't exist
@@ -112,13 +128,10 @@ with open(output_file_path, 'w') as file:  # Modified to use the calculated outp
     for x, y in zip(spectrum_energy, spectrum_intensity):
         file.write(f"{x}\t{y}\n")
 
-# Define the extent for the intensity range
-extent = [selected_area_begin, selected_area_end, 0, PIXEL_COUNT]
-
 # Plot the rotated image with adjusted intensity range
 fig, axs = plt.subplots(1, 2, figsize=(10, 4.5), gridspec_kw={'width_ratios': [3, 2]})
 
-im = axs[0].imshow(integrated_area, interpolation='none', aspect='equal')
+im = axs[0].imshow(integrated_area_baseline_subtract, interpolation='none', aspect='equal')
 fig.colorbar(im, ax=axs[0], label='Intensity (a.u)')  # Add color bar indicating intensity
 axs[0].set_xlabel('')  # Label for the x-axis
 axs[0].set_ylabel('')  # Label for the y-axis
