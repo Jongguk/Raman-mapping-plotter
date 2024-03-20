@@ -13,6 +13,9 @@ Finally, this 3D-array can converts the Raman (or PL (photoluminescence) mapping
 
 <img src="https://github.com/Jongguk/Raman-mapping-plotter/assets/55820453/607c3f50-91ce-4864-a0f1-0a452852c9cb" width=700px>
 
+
+Reference data for image: _ACS Appl. Mater. Interfaces_ **2020**, _12_, 40870–40878
+
 ## Prerequisites
 * Python 3.12 or higher
   * Numpy 1.26.4
